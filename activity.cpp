@@ -15,12 +15,11 @@ protected:
 public:
     Employee(int empId, string empName) : id(empId), name(empName) {}
 
-    virtual double calculateSalary() const = 0; 
+    virtual double calculateSalary() const = 0;
+    virtual void displayDetails() const = 0;
 
     int getId() const { return id; }
     string getName() const { return name; }
-
-    virtual void displayDetails() const = 0; 
 };
 
 class FullTimeEmployee : public Employee {
@@ -90,52 +89,43 @@ void clearInput() {
 
 int getValidInt(string prompt) {
     string input;
-    while (true) {
-        cout << prompt;
-        cin >> input;
+    cout << prompt;
+    cin >> input;
 
-        bool isValid = true;
-        for (char c : input) {
-            if (!isdigit(c)) {
-                isValid = false;
-                break;
-            }
-        }
-
-        if (isValid) {
-            return stoi(input);
-        } else {
-            cout << "Invalid input! Please enter a valid positive number.\n";
+    for (char c : input) {
+        if (!isdigit(c)) {
+            cout << "Invalid input! Returning to menu...\n";
+            return -1;
         }
     }
+    return stoi(input);
 }
 
 double getValidDouble(string prompt) {
     string input;
-    while (true) {
-        cout << prompt;
-        cin >> input;
+    cout << prompt;
+    cin >> input;
 
-        bool isValid = true;
-        int dotCount = 0; 
+    bool isValid = true;
+    int dotCount = 0;
 
-        for (char c : input) {
-            if (!isdigit(c)) {
-                if (c == '.' && dotCount == 0) {
-                    dotCount++; 
-                } else {
-                    isValid = false;
-                    break;
-                }
+    for (char c : input) {
+        if (!isdigit(c)) {
+            if (c == '.' && dotCount == 0) {
+                dotCount++;
+            } else {
+                isValid = false;
+                break;
             }
         }
-
-        if (isValid && !input.empty() && input != ".") {
-            return stod(input);
-        } else {
-            cout << "Invalid input! Please enter a valid positive amount.\n";
-        }
     }
+
+    if (!isValid || input.empty() || input == ".") {
+        cout << "Invalid input! Returning to menu...\n";
+        return -1;
+    }
+
+    return stod(input);
 }
 
 int main() {
@@ -154,7 +144,7 @@ int main() {
         cin >> choice;
 
         if (cin.fail()) {
-            cout << "Invalid input! Please enter a number between 1 and 5.\n";
+            cout << "Invalid input! Returning to menu...\n";
             clearInput();
             continue;
         }
@@ -165,12 +155,14 @@ int main() {
 
             while (true) {
                 id = getValidInt("Enter Employee ID: ");
+                if (id == -1) break;
                 if (idSet.find(id) == idSet.end()) {
                     idSet.insert(id);
                     break;
                 }
                 cout << "Duplicate ID! Enter a unique ID.\n";
             }
+            if (id == -1) continue;
 
             cout << "Enter Name: ";
             cin.ignore();
@@ -178,16 +170,21 @@ int main() {
 
             if (choice == 1) {
                 double salary = getValidDouble("Enter Fixed Salary: ");
+                if (salary == -1) continue;
                 employees.push_back(new FullTimeEmployee(id, name, salary));
             }
             else if (choice == 2) {
                 double wage = getValidDouble("Enter Hourly Wage: ");
+                if (wage == -1) continue;
                 int hours = getValidInt("Enter Hours Worked: ");
+                if (hours == -1) continue;
                 employees.push_back(new PartTimeEmployee(id, name, wage, hours));
             }
             else {
                 double payment = getValidDouble("Enter Contract Payment Per Project: ");
+                if (payment == -1) continue;
                 int projects = getValidInt("Enter Number of Projects: ");
+                if (projects == -1) continue;
                 employees.push_back(new ContractualEmployee(id, name, payment, projects));
             }
 
@@ -207,7 +204,7 @@ int main() {
             cout << "Exiting program...\n";
         }
         else {
-            cout << "Invalid choice! Please enter a number between 1 and 5.\n";
+            cout << "Invalid choice! Returning to menu...\n";
         }
 
     } while (choice != 5);
